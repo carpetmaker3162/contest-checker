@@ -53,7 +53,7 @@ if __name__ == '__main__':
         year = int(sys.argv[2])
         contest = sys.argv[1]
     else:
-        year = 2024
-        contest = "CCC"
+        print('Usage: python3 contest.py <contest> <year>')
+        sys.exit(1)
 
     interact(contest, year)
