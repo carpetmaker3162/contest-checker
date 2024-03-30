@@ -4,6 +4,9 @@ import requests
 import sys
 import time
 
+def make_url(contest: str, year: int):
+    return 'https://www.cemc.uwaterloo.ca/contests/past_contests/{}/{}{}Results.pdf'.format(year, year, contest)
+
 def check(url):
     r = requests.get(url)
 
@@ -12,6 +15,7 @@ def check(url):
     elif r.status_code == 200:
         return 0
     else:
+        print(r)
         return -1
 
 def interact(contest, year):
