@@ -94,6 +94,10 @@ async def restart(ctx):
     await ctx.message.add_reaction('⌛')
     os.execl(sys.executable, sys.executable, *sys.argv)
 
+@bot.command(name='alive')
+async def alive(ctx):
+    await ctx.reply('alive ({}ms)'.format(round(bot.latency * 1000)))
+
 if __name__ == '__main__':
     token = os.getenv('TOKEN')
     bot.run(token)
