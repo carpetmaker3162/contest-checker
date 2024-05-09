@@ -1,10 +1,15 @@
 import asyncio
 from contest import check, make_url
+from contextlib import redirect_stdout
 import discord
 from discord.ext import commands
 from dotenv import load_dotenv
+import io
 import os
 import sys
+from textwrap import indent
+import time
+from traceback import format_exception
 
 load_dotenv()
 
@@ -21,6 +26,7 @@ def perms_only():
     def has_perms(ctx):
         return ctx.author.id in operators
     return commands.check(has_perms)
+
 
 @bot.command(name='add')
 @perms_only()
@@ -39,6 +45,7 @@ async def add(ctx, *contests):
         monitoring.append((contest, year))
 
     await ctx.message.add_reaction('🤓')
+
 
 async def check_contests(channel: discord.TextChannel):
     global monitoring
@@ -62,9 +69,10 @@ async def check_contests(channel: discord.TextChannel):
 
     if not_out:
         contests = ', '.join(contest + ' ' + year for contest, year in not_out)
-        await channel.send(contests + ' results are not out')
+        await channel.send(contests + ' results is/are not out')
 
     monitoring = [x for x in monitoring if x not in out]
+
 
 async def loop(channel: discord.TextChannel, interval: int):
     global looping
@@ -80,6 +88,7 @@ async def loop(channel: discord.TextChannel, interval: int):
         await check_contests(channel=channel)
         await asyncio.sleep(interval)
 
+
 @bot.command(name='loop')
 @perms_only()
 async def start_loop(ctx, interval: int = 900):
@@ -89,15 +98,52 @@ async def start_loop(ctx, interval: int = 900):
     except Exception as e:
         print(e)
 
+
 @bot.command(name='restart')
 @perms_only()
 async def restart(ctx):
     await ctx.message.add_reaction('⌛')
     os.execl(sys.executable, sys.executable, *sys.argv)
 
+
 @bot.command(name='alive')
 async def alive(ctx):
     await ctx.reply('alive ({}ms)'.format(round(bot.latency * 1000)))
+
+
+@bot.command(name='exec')
+@perms_only()
+async def exec_command(ctx, *, code):
+    globals = {
+        'discord': discord,
+        'commands': commands,
+        'bot': bot,
+        'ctx': ctx,
+        'start_loop': start_loop,
+        'loop': loop,
+        'add': add,
+        'check_contests': check_contests,
+    }
+    
+    buffer = io.StringIO()
+
+    try:
+        with redirect_stdout(buffer):
+            exec('async def func():\n{}'.format(indent(code, '    ')), globals)
+            func = await globals['func']()
+
+            await ctx.message.add_reaction('🤓')
+
+    except Exception as e:
+        time_begin = time.time()
+        result = ''.join(format_exception(e, e, e.__traceback__))
+
+        embed = discord.Embed(title='')
+        embed.add_field(name='', value = ('```py\n{}```'.format(result)))
+        embed.set_footer(text='evaluated in {} ms'.format(round((time.time() - time_begin) * 1000)))
+
+        await ctx.send(embed=embed)
+
 
 if __name__ == '__main__':
     token = os.getenv('TOKEN')
