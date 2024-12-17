@@ -1,5 +1,4 @@
-# contest-checker
-***NOTE: Since CEMC finally updated their website that looked like it was from the 90s, this is now broken***
+# contest-checker  
 
 simple script to check whether a CEMC contest has published results
 
