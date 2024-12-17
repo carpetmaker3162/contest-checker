@@ -5,7 +5,8 @@ import sys
 import time
 
 def make_url(contest: str, year: int):
-    return 'https://www.cemc.uwaterloo.ca/contests/past_contests/{}/{}{}Results.pdf'.format(year, year, contest)
+    # return 'https://www.cemc.uwaterloo.ca/contests/past_contests/{}/{}{}Results.pdf'.format(year, year, contest)
+    return 'https://cemc.uwaterloo.ca/sites/default/files/documents/{}/{}{}Results.pdf'.format(year, year, contest)
 
 def check(url):
     r = requests.get(url)
