@@ -21,7 +21,7 @@ def check(url):
 
 def interact(contest, year):
     now = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-    url = 'https://www.cemc.uwaterloo.ca/contests/past_contests/{}/{}{}Results.pdf'.format(year, year, contest)
+    url = 'https://cemc.uwaterloo.ca/sites/default/files/documents/{}/{}{}Results.pdf'.format(year, year, contest)
 
     if check(url) == 1:
         print('{}: {} {} results are not out'.format(now, contest, year))
