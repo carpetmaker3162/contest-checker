@@ -69,7 +69,7 @@ async def check_contests(channel: discord.TextChannel):
 
     if not_out:
         contests = ', '.join(contest + ' ' + year for contest, year in not_out)
-        await channel.send(contests + ' results is/are not out')
+        await channel.send(contests + ' results are not out')
 
     monitoring = [x for x in monitoring if x not in out]
 
