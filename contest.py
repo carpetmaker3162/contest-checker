@@ -8,6 +8,7 @@ def make_url(contest: str, year: int):
     # return 'https://www.cemc.uwaterloo.ca/contests/past_contests/{}/{}{}Results.pdf'.format(year, year, contest)
     return 'https://cemc.uwaterloo.ca/sites/default/files/documents/{}/{}{}Results.pdf'.format(year, year, contest)
 
+
 def check(url):
     r = requests.get(url)
 
@@ -18,6 +19,7 @@ def check(url):
     else:
         print(r)
         return -1
+
 
 def interact(contest, year):
     now = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
@@ -31,6 +33,7 @@ def interact(contest, year):
         pyperclip.copy(url)
         print('URL copied to clipboard')
         return 0
+
 
 def loop(contests, delay):
     while True:
@@ -52,6 +55,7 @@ def loop(contests, delay):
         print(chr(7), end='')
         sys.stdout.flush()
         time.sleep(0.5)
+
 
 if __name__ == '__main__':
     if len(sys.argv) >= 3:

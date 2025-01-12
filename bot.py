@@ -30,19 +30,23 @@ def perms_only():
 
 @bot.command(name='add')
 @perms_only()
-async def add(ctx, *contests):
-    if len(contests) % 2 != 0:
+async def add(ctx, *args):
+    if len(args) % 2 != 0:
         await ctx.reply('invalid')
         return
 
-    for i in range(len(contests) // 2):
-        contest = contests[2*i]
-        year = contests[2*i + 1]
+    for i in range(len(args) // 2):
+        aliases = args[2*i].split('|')
+        year = args[2*i + 1]
 
-        if (contest, year) in monitoring:
+        # "contest|alias1|alias2|..."
+        contest = aliases[0]
+
+        # Already checking another same year contest
+        if any(c[0] == contest and c[1] == year for c in monitoring):
             return
 
-        monitoring.append((contest, year))
+        monitoring.append((contest, year, aliases))
 
     await ctx.message.add_reaction('🤓')
 
@@ -53,22 +57,29 @@ async def check_contests(channel: discord.TextChannel):
     not_out = []
     out = []
 
-    for contest, year in monitoring:
-        url = make_url(contest, year)
+    for contest, year, aliases in monitoring:
+        is_out = False
 
-        status = check(url)
+        for alias in aliases:
+            url = make_url(alias, year)
 
-        if status == 1:
-            not_out.append((contest, str(year)))
-        elif status == 0:
-            await channel.send('@everyone {} {} RESULTS ARE OUT!!!\n\n[Results]({})\n\n[CEMC website](https://www.cemc.uwaterloo.ca/contests/past_contests.html)\n--------'.format(contest, year, url))
+            status = check(url)
 
-            out.append((contest, year))
-        elif status == -1:
-            await channel.send('something went wrong ({} {})'.format(contest, year))
+            if status == 0:
+                await channel.send('@everyone {} {} RESULTS ARE OUT!!!\n\n[Results]({})\n\n[CEMC website](https://www.cemc.uwaterloo.ca/contests/past_contests.html)\n--------'.format(contest, year, url))
 
-    if not_out:
-        contests = ', '.join(contest + ' ' + year for contest, year in not_out)
+                out.append((contest, year, aliases))
+                is_out = True
+                break
+            elif status == -1:
+                await channel.send('something went wrong ({} {} {})'.format(contest, alias, year))
+
+        # All aliases of the contest are not out
+        if not is_out:
+            not_out.append((contest, year, aliases))
+
+    if len(not_out) > 0:
+        contests = ', '.join(contest + ' ' + year for contest, year, _ in not_out)
         await channel.send(contests + ' results are not out')
 
     monitoring = [x for x in monitoring if x not in out]
@@ -123,6 +134,8 @@ async def exec_command(ctx, *, code):
         'loop': loop,
         'add': add,
         'check_contests': check_contests,
+        'monitoring': monitoring,
+        'operators': operators,
     }
     
     buffer = io.StringIO()
